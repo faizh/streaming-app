@@ -9,6 +9,16 @@ use Illuminate\Support\Facades\Storage;
 
 class VideoController extends Controller
 {
+
+        /**
+     * Display a listing of the resource.
+     */
+    public function landing()
+    {
+        $videos = Video::all();
+        return view('contents.landing', ['videos' => $videos]);
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -36,14 +46,15 @@ class VideoController extends Controller
         ]);
 
         $file = $request->file('file_upload');
-        $filename = str_replace(" ", "_", $request->post('name')) . '-' . md5(date('Y-m-d H:i:s')) . '.' .$file->extension();
+        $filename = str_replace(" ", "_", $request->post('name')) . '-' . md5(date('Y-m-d H:i:s')) . '.' . $file->extension();
 
         $path = 'public/videos';
 
         $path = $file->storeAs($path, $filename);
-        
-        if ( ! $path ) {
-            echo "error upload";exit;
+
+        if (!$path) {
+            echo "error upload";
+            exit;
         }
 
         $videoData = array(
@@ -54,10 +65,11 @@ class VideoController extends Controller
 
         $create = Video::create($videoData);
 
-        if ( !$create ) {
-            echo "error create";exit;
+        if (!$create) {
+            echo "error create";
+            exit;
         }
- 
+
         return redirect()->route('video');
     }
 
@@ -70,7 +82,8 @@ class VideoController extends Controller
 
         $video->path = Storage::url($video->path);
         
-        dump($video);
+        return view('contents.video-show', compact('video'));
+        
     }
 
     /**
@@ -79,6 +92,10 @@ class VideoController extends Controller
     public function edit(string $id)
     {
         //
+        $video = Video::find($id);
+
+        $video->path = Storage::url($video->path);
+        return view('contents.video-edit', compact('video'));
     }
 
     /**
@@ -86,7 +103,46 @@ class VideoController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+
+        $request->validate([
+            'name'     => ['required']
+        ]);
+
+        $file = $request->file('file_upload');
+        $filename = str_replace(" ", "_", $request->post('name')) . '-' . md5(date('Y-m-d H:i:s')) . '.' . $file->extension();
+
+        $path = 'public/videos';
+
+        $path = $file->storeAs($path, $filename);
+
+        if (!$path) {
+            echo "error upload";
+            exit;
+        }
+
+        $videoData = array(
+            'name'          => $request->post('name'),
+            'path'          => $path,
+            'created_by'    => Auth::id()
+        );
+        $old = Video::find($id);
+        if (!$old) {
+            echo "error update";
+            exit;
+        }
+
+
+        if (!$old->delete()) {
+            echo "error update";
+            exit;
+        }
+        $create = Video::create($videoData);
+        if (!$create) {
+            echo "error update";
+            exit;
+        }
+
+        return redirect()->route('video');
     }
 
     /**
@@ -96,7 +152,7 @@ class VideoController extends Controller
     {
         $video = Video::find($id);
 
-        if (! $video->delete()) {
+        if (!$video->delete()) {
             echo "delete failed";
         }
 

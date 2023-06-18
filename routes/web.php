@@ -15,9 +15,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    echo 1;
-});
+Route::get('/', [VideoController::class, "landing"])->name('landing');  
+
 
 Route::get('/login', function () {
   return view('login');
@@ -33,5 +32,6 @@ Route::group(["prefix" => "admin", "middleware" => "auth"], function () {
     Route::post('video-store', [VideoController::class, "store"])->name('video.store');
     Route::get('/video-view/{id}', [VideoController::class, "show"])->name('video.view');
     Route::get('/video-edit/{id}', [VideoController::class, "edit"])->name('video.edit');
+    Route::post('/video-update/{id}', [VideoController::class, "update"])->name('video.update');
     Route::get('/video-delete/{id}', [VideoController::class, "destroy"])->name('video.delete');
 });
